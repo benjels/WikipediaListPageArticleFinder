@@ -1,3 +1,10 @@
+-dependencies of run this code are in the requirements.txt file that is part of this repo.
+
+-this code contains some absolute file paths
+
+
+
+
 unfortunately, the way that lists of articles are done in wikipedia is not standardised and as
 it is not completely trivial to write code that can collect articles from lists that works for
 every article.
@@ -6,9 +13,13 @@ what the algorithm will basically do is take some wikipedia pages as recursion s
 and then recursively visit each page referenced in the body of the current page until it reaches a page that doesn't
 have the string "list of" or "lists of". When that happens, we have probably reached an article that might be about something
 to do with NZ. These are exactly the articles we want. It might also not be related to NZ. e.g. the article for "List of New
-Zealand architects" links to the wikipedia article "New Zealand". Towards the end of only collecting NZ related articles,
+Zealand architects" links to the wikipedia article "Architects". Towards the end of only collecting NZ related articles,
 We will only add articles to our master list of "goodArticles" if we find the string "new zealand" (or some differently cased variation)
-somewhere in that article.
+somewhere in that article. Note that this could easily lead us to add New Zealand related articles that aren't related to the original list. e.g. the page for list of New Zealand towns contains a link to an article about the
+recent New Zealand flag discussion.
+
+
+
 
 THINGS TO BE CAUTIOUS OF:
 1) should exclude articles that have "list" or "lists" in the title from the final article master lsit

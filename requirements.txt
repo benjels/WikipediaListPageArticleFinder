@@ -1,3 +1,4 @@
 beautifulsoup4==4.4.1
+regex==2015.11.22
 requests==2.8.1
 wheel==0.24.0
