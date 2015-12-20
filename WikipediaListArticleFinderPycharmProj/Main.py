@@ -1,31 +1,75 @@
 __author__ = 'user'
-# unfortunately, the way that lists of articles are done in wikipedia is not standardised and as
-# it is not completely trivial to write code that can collect articles from lists that works for
-# every article.
-#
-# what the algorithm will basically do is take some wikipedia pages as recursion start points
-# and then recursively visit each page referenced in the body of the current page until it reaches a page that doesn't
-# have the string "list of" or "lists of". When that happens, we have probably reached an article that might be about something
-# to do with NZ. These are exactly the articles we want. It might also not be related to NZ. e.g. the article for "List of New
-# Zealand architects" links to the wikipedia article "New Zealand". Towards the end of only collecting NZ related articles,
-# We will only add articles to our master list of "goodArticles" if we find the string "new zealand" (or some differently cased variation)
-# somewhere in that article.
-#
-# THINGS TO BE CAUTIOUS OF:
-# 1) should exclude articles that have "list" or "lists" in the title from the final article master lsit
-# 2) we are going to be getting articles from 2015 wikipedia and then trying to get the corresponding articles
-# from a 2011 version of wikipedia (for now at least). So need to check that the articles actually existed back then
-# when creating our collection of Topic (or whatever type is needed) objects from our master-list of articles.
 
 from bs4 import BeautifulSoup
 import requests
 import regex
+import yaml
+from pprint import pprint
 
 
-nzRelatedArticlesIDs = []#list of wikipedia IDs of nz relevant articles that we find
-visitedURLs = [] #complete list of all URLs that have been visited. We should never visit the same URL more than once. This should really be a set but whatever.
-WIKIPEDIA_URL_ROOT_STRING = "https://en.wikipedia.org" #many of the urls linked in the html are incomplete
-MAX_DEPTH_ALLOWED = 2 # we are not going deep atm
+
+def main2():
+    print("easfs")
+    harvester = Harvester(3, "rules.yml")
+    print(harvester.get("New_Zealand"))
+
+#an instance of the Harvester class can be used to find a lot of interesting URLs given an appropriate yml file
+class Harvester(object):
+
+    def __init__(self, maxDepth, ruleset, verbose = False):
+        self.maxDepth = maxDepth #FIELD# the maximum depth of this Harvester's recursion
+        self.WIKIPEDIA_URL_ROOT_STRING = "https://en.wikipedia.org/wiki/" #FIELD# the root of all article URLS
+        self.visitedURLs = set() #FIELD# set of URLs that have been visited by the Harvester
+        self.FoundArticlesTitles = set() #FIELD# set of article titles found by the Harvester
+        self.verbose = verbose #FIELD# gives more printouts when true
+        with open(ruleset, "r") as fileStream:
+           # self.ruleset = yaml.load(fileStream)#FIELD# the "rules" that the Harvester uses to determine what its seed/start locations are and which articles it should look for/ignore etc
+           print("this not ready yet")
+
+    #just a helper method for getting the text content from a wikipedia page name (e.g. "List_of_towns_in_New_Zealand")
+    #Returns the text content of the page queried UNLESS there is an error, then returns None.
+    def getPage(self, pageName):#TODO: maybe this method should return soup
+        url = self.WIKIPEDIA_URL_ROOT_STRING + pageName
+        if self.verbose:
+            print("getting : " + url)
+        response = requests.get(url)#TODO: probably also catch all exceptions raised by making the request and just log the URLs that cause them
+        if response.status_code != 200:
+            print("error making request. status code: " + response.status_code)
+            return None
+        return response.text
+
+    #takes the text/content of a wikipedia article page and uses the rules in the rules.yml file
+    #to determine whether the article should be saved.
+    #Returns True if the article is relevant to what we are looking for (defined in rules.yml)
+    #Returns False if the article is not relevant to what we are looking for OR if there is an error
+    def determineArticleRelevance(self, textContent):
+        print("using rules.yml to determine this shit senpai")
+        #check that there's nothing in article black list present here
+
+        #check if there's something in article seek list here
+
+
+    #gets the page with the article page name provided. If that page is a list, recursively call this
+    #method to find even more articles. If that page is a "leaf" article, then find out whether it is an
+    #article that we are interested in.
+    #Returns a set of page name strings that belong to relevant articles that were either the article whose
+    #name was initially provided to this method, or some "descendant" articles that are reachable from this article
+    #via recursive calls (if this method was provided with a list article).
+    def findArticles(self, pageName, depth, textualDescOfBranch):
+        #check that we haven't gone too deep
+
+        #mark this URL as visited so that we don't come back
+
+        #if we are at a relevant list, scrape the links in here and return the result of the recursive calls
+
+        #if we are at a leaf, then check whether we want to return this as relevant or not
+
+
+        #if the article that we are at is neither a desired list, nor a desired leaf, return the empty set
+
+
+
+
 
 
 
@@ -52,20 +96,23 @@ def main():
 
     examineArticle("https://en.wikipedia.org/wiki/Lists_of_New_Zealanders", 0)
     progressLogFile = open("C:\!2015SCHOLARSHIPSTUFF\wikipediaNZRelatedScrapeResults\serachingProgress.txt", "w")
-    progressLogFile.write("finished search that started with : " + "https://en.wikipedia.org/wiki/Lists_of_New_Zealanders \n")
+    progressLogFile.write("finished search that started with : " + "https://en.wikipedia.org/wiki/List_of_towns_in_New_Zealand \nhttps://en.wikipedia.org/wiki/Lists_of_New_Zealanders \n")
     progressLogFile.close()
 
 
     examineArticle("https://en.wikipedia.org/wiki/Category:Lists_of_places_in_New_Zealand", 0)
     progressLogFile = open("C:\!2015SCHOLARSHIPSTUFF\wikipediaNZRelatedScrapeResults\serachingProgress.txt", "w")
-    progressLogFile.write("finished search that started with : " + "https://en.wikipedia.org/wiki/Category:Lists_of_places_in_New_Zealand \n")
+    progressLogFile.write("finished search that started with : " + "https://en.wikipedia.org/wiki/List_of_towns_in_New_Zealand \nhttps://en.wikipedia.org/wiki/Lists_of_New_Zealanders \nhttps://en.wikipedia.org/wiki/Category:Lists_of_places_in_New_Zealand \n")
     progressLogFile.close()
 
 
     #we have gathered all of the article IDs, so let's write them to a file that our java program will use
-    fileToSaveIDs = open("C:\!2015SCHOLARSHIPSTUFF\wikipediaNZRelatedScrapeResults\idsAll.txt", "w")
-    for each in nzRelatedArticlesIDs:
-        fileToSaveIDs.write(each + "\n")
+    fileToSaveIDs = open("C:\!2015SCHOLARSHIPSTUFF\wikipediaNZRelatedScrapeResults\onlyLookingAtFirstPara.txt", "w")
+    for each in range(0, len(nzRelatedArticlesIDs)):
+        try:
+            fileToSaveIDs.write(nzRelatedArticlesIDs[each] + "," + nzRelatedArticlesTitle[each] + "\n")
+        except UnicodeEncodeError:
+            print("error encoding: " + nzRelatedArticlesTitle[each])
     fileToSaveIDs.close()
     print("program finished naturally after collecting the following amount of wikipedia article IDs: " + str(len(nzRelatedArticlesIDs)))
 
@@ -145,10 +192,15 @@ def examineArticle(wikipediaArticleURL, depthValue, pathThroughArticlesSoFar = "
 #added to the master list of articles. Else, do nothing.
 def determineNZArticleOrNot(wikipediaArticleURL):
 
-    articleToExamineResponse = requests.get(wikipediaArticleURL)
-    articleSoup = BeautifulSoup(articleToExamineResponse.text, 'html.parser')
+    try:
+        articleToExamineResponse = requests.get(wikipediaArticleURL)
+        articleSoup = BeautifulSoup(articleToExamineResponse.text, 'html.parser')
+        firstParagraph = str(articleSoup.find('p')).lower()
+    except:
+        print("exception trying to get the article: " + wikipediaArticleURL + " so we will stop this branch")
+        return None
 
-    if "new zealand" in articleSoup.get_text().lower():
+    if "new zealand" in firstParagraph:
         print("found an nz related leaf article: " + articleSoup.title.text)
         articleSoupText = articleSoup.get_text()
         #NOTE: this is a gross bit of regular expression black magic that finds the unique
@@ -158,10 +210,12 @@ def determineNZArticleOrNot(wikipediaArticleURL):
             matchFound = regexIDMatch.group(0)
             foundID = regex.sub("[^0-9]", "", matchFound)
             nzRelatedArticlesIDs.append(foundID)
+            nzRelatedArticlesTitle.append(articleSoup.title.text.lower())
+            assert len(nzRelatedArticlesIDs) == len(nzRelatedArticlesTitle), "those should always be the same size"
 
 
 
 
 
 if __name__ == '__main__':
-    main()
+    main2()

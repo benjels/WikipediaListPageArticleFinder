@@ -1,0 +1,32 @@
+---
+# ignore strings should be lowercase.
+# TODO - lower() in code
+ignore:
+    - list_of
+    - 'Template_talk:'
+# scopes should always end with 'a'
+# TODO - handle in clever way in code if missing
+seeds: #seeds is a key in a map. NOTE THAT SOME OF THESE KEYS ARE ACTUALLY USEFUL/MEANINGFUL IN THE PROGRAM BY THEMSELVES. NOT JUST USED FOR RETREIVAL. KINDA WEIRD.
+    List_of_towns_in_New_Zealand: #this is also a key in a map. i.e. the "rules" map
+        scopes: #this is also a key in a map
+            - 'div#mw-content-text td li a' #this is not a key in a map. This is an entry in a list.
+    List_of_cities_in_New_Zealand:
+        scopes:
+            - 'div#mw-content-text table.sortable td a'
+...
+
+-i guess you will want some kind of info for what part of the html to look in when working
+with general list articles looking for more links in that list article e.g.
+try using a whole lot of different scopes like the ones that are given above
+and handle errors gracefully because probably heaps of these lists wont contain that
+html element or whatever
+
+-you will also want some info on where to look in a leaf article to determine whether
+that article is an nz article or not. probably just in the first paragraph or watev
+
+
+-you will also want some stuff to ignore i guess. like definite red flags that something is not
+what we are looking for
+
+e.g. like URL suffixes that are not even for actual wikipedia articles
+
