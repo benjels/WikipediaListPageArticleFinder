@@ -1,32 +1,59 @@
 ---
 # ignore strings should be lowercase.
 # TODO - lower() in code
-ignore:
-    - list_of
-    - 'Template_talk:'
-# scopes should always end with 'a'
-# TODO - handle in clever way in code if missing
-seeds: #seeds is a key in a map. NOTE THAT SOME OF THESE KEYS ARE ACTUALLY USEFUL/MEANINGFUL IN THE PROGRAM BY THEMSELVES. NOT JUST USED FOR RETREIVAL. KINDA WEIRD.
-    List_of_towns_in_New_Zealand: #this is also a key in a map. i.e. the "rules" map
-        scopes: #this is also a key in a map
-            - 'div#mw-content-text td li a' #this is not a key in a map. This is an entry in a list.
-    List_of_cities_in_New_Zealand:
-        scopes:
-            - 'div#mw-content-text table.sortable td a'
-...
-
--i guess you will want some kind of info for what part of the html to look in when working
-with general list articles looking for more links in that list article e.g.
-try using a whole lot of different scopes like the ones that are given above
-and handle errors gracefully because probably heaps of these lists wont contain that
-html element or whatever
-
--you will also want some info on where to look in a leaf article to determine whether
-that article is an nz article or not. probably just in the first paragraph or watev
 
 
--you will also want some stuff to ignore i guess. like definite red flags that something is not
-what we are looking for
+#the blacklist and the whitelist are used to determine whether some article/list-article is related to the topics that we are interested in. The listEntryRequirements list also helps filter out articles by looking for patterns that must exist in the URL.
+#It is necessary to break these into two groups because there is sometimes information present in the URL that is not in the page source. e.g. "https://en.wikipedia.org/wiki/Kerikeri#Origins_and_naming" yields the same source as "https://en.wikipedia.org/wiki/Kerikeri", but we are only interested in the latter.
+whitelist:
+  p:
+    - 'new zealand'
+  title:
+    - 'new zealand'
 
-e.g. like URL suffixes that are not even for actual wikipedia articles
+
+blacklist:
+  "body":
+    - "this article is not related to new zealand!"
+
+#regex patterns that a would-be harvested link must match wtih
+listEntryRequirements:
+  - ".{9}" # the article url extension should be of a sensible length. i.e. at least 9 chars
+  - "^/wiki/|^/w/" # the href should have wiki or w in the url else it probably is some kind of meta info page rather than an article
+#regex patterns that a would-be harvested link must NOT match with
+listEntryDissaloweds:
+  - "/wiki/Template_talk:"
+  - "/wiki/Portal:"
+  - "/wiki/Special:"
+  - "/wiki/Template:"
+  - "&action=edit"
+
+#scrape starting points
+#css selectors to determine where we should look in list articles for list elements
+scopes:
+   - "div#mw-content-text li a" #quite a loose filter...
+   - a[href^="/w/index.php?title=Category:All_Wikipedia_articles_written_in_New_Zealand_English&pagefrom"]
+
+collectionArticleIdentifiers:
+  title:
+    - "[^a-z|A-Z]list[^a-z|A-Z]|^list[^a-z|A-Z]|[^a-z|A-Z]list$|[^a-z|A-Z]lists[^a-z|A-Z]|^lists[^a-z|A-Z]|[^a-z|A-Z]lists$" #pattern that finds articles with lists/list as a discrete word in the article URL
+    - "Category:" #category articles can be thought of as lists i guess
+
+#start points for the recursive search
+seeds:
+  "/wiki/Category:All_Wikipedia_articles_written_in_New_Zealand_English":
+    50
+  /wiki/Category:New_Zealand-related_lists:
+    8
+
+
+
+
+
+
+
+
+
+
+
 
