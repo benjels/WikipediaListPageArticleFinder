@@ -5,6 +5,7 @@ import requests
 import regex
 import yaml
 from pprint import pprint
+import re
 
 #this is just debug shit
 failedGets = set()
@@ -22,7 +23,7 @@ class Harvester(object):
         self.visitedURLs = set()
         self.FoundArticlesTitles = set()
         self.verbose = verbose
-        with open(ruleset, "r") as fileStream:
+        with open(ruleset, "r", encoding="utf-8") as fileStream:
             self.rules = yaml.load(fileStream)#dont actually know what will be encoded in the rules yaml. But probably something.
 
     #just used to start the searching. Calls findArticles
@@ -65,12 +66,16 @@ class Harvester(object):
         #if we are at a leaf, then check whether we want to return this as relevant or not
         else:
            if self.evaluateArticleRelatedness(articleSoup):
-               print("gathered - " + pageName + " No." + str(self.gatheredCount))
                self.gatheredCount+=1
-               returnSet.add(self.cleanTitle(pageName))
+               topicTitle = self.cleanTitle(articleSoup.find("title").text)
+               print("gathered - " + topicTitle + " No." + str(self.gatheredCount))
+               returnSet.add(topicTitle)
 
         #at this point return set either has (a): one or more relevant article URLs, (b) nothing in it because it was a leaf article but not relevant
         return returnSet
+
+
+
 
         #helper method used to find list elements on a list article page
     def gatherListEntries(self, articleSoup):
@@ -139,16 +144,18 @@ class Harvester(object):
         return BeautifulSoup(response.text, 'html.parser')
 
 
-    #TODO: i think i need to account for ' as well which is becing reincoded incorrectly
-    def cleanTitle(self, urlExtension):
-        #remove "wiki" prefix
-        title = urlExtension[6:]
-        #swap out _ for " "
-        title = title.replace("_", " ").lower()
+
+    def cleanTitle(self, fullTitle):
+        #remove the parts of the title we don't care about
+        title = re.sub(" -.*", "", fullTitle)
+        #make it lower case
+        title = title.lower()
+        #replace apostrophes which are encoded differently in the URL
+        #title = title.replace("%27","'")
+        #likewise with the ampersand character
+        #title = title.replace("%26","&")
         print("TITLE IDed AS:" + title)
         return title
-
-
 
 
 
@@ -161,16 +168,15 @@ def main():
      print("so we gathered the following amount of articles: " + str(len(setOfHarvestedTitle)))
      for each in failedGets:
          print("failed: " + each)
-     with open("ifWellingtonNotInHereItBecauseOtherSeedMessesItUp.txt", "w") as outFile:
+     with open("15thlog.txt", "w", encoding="utf-8") as outFile:
          setOfHarvestedTitle = "\n".join(setOfHarvestedTitle)
          outFile.writelines(setOfHarvestedTitle)
 if __name__ == '__main__':
     main()
 
 # todo:
+# SO IF IT STILL FUCKS UP JEFF DA MAORI BECAUSE OF THE A GRAVE THEN IT MUST BE SOMETHING TO DO WITH DECODING THE URL FOR THAT ARTICLE THAT IT SCRAPES; because it works when i just use that article's real url as a seed
+# yeah note that it gets it when the URL is given as a seed but not from the ordinary crawl
+# -make determining nzness more sophisticated in the yml: you just consider checking wgCategories.
 
-# -change logic for determining whether an article is a list or not. some lists have names without "list" in them e.g. "Presidents of the U.S.A." TRY TO FIND SOME SEMANTIC MARKER IN THE WIKIPEDIA ARTICLE HTML. also try to make those pages that each hold 200 links lists and make that href that goes to the next 200 a list link. That way can get those ~8000 ez wikipedia pages just through using this program
-# -make determining nzness more sophisticated in the yml :)
-#- a character in e.g. "maori" id like /wiki/M%C4%81ori_language should be /wiki/Maori_language
-#-add listness as a list of regexs in the yml. should have that existing list/lists one and "Category:" as well
-#-there are some wikipedia articles that SHOULD be getting gathered but dont seem to be getting got in the whitelist check step open in chrome :) have a nice day
+
