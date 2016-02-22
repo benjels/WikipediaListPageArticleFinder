@@ -7,9 +7,9 @@
 #It is necessary to break these into two groups because there is sometimes information present in the URL that is not in the page source. e.g. "https://en.wikipedia.org/wiki/Kerikeri#Origins_and_naming" yields the same source as "https://en.wikipedia.org/wiki/Kerikeri", but we are only interested in the latter.
 whitelist:
   p:
-    - 'new zealand'
+    - 'australia'
   title:
-    - 'new zealand'
+    - 'australia'
 
 
 blacklist:
@@ -32,7 +32,7 @@ listEntryDissaloweds:
 #css selectors to determine where we should look in list articles for list elements
 scopes:
    - "div#mw-content-text li a" #quite a loose filter...
-   - a[href^="/w/index.php?title=Category:All_Wikipedia_articles_written_in_New_Zealand_English&pagefrom"]
+   - a[href^="/w/index.php?title=Category:All_Wikipedia_articles_written_in_Australian_English&pagefrom"]
 
 #these are used to determine whether the article we are looking at is a list/collection (in which case we should look for more outgoing links on this page), or a leaf article.
 #note that these should be lower case #TODO: consider making this ordinarily cased because i think the only reason i .lower()ed it is to make the regex easier lol
@@ -43,10 +43,10 @@ collectionArticleIdentifiers:
 
 #start points for the recursive search
 seeds:
-  "/wiki/Category:All_Wikipedia_articles_written_in_New_Zealand_English":
-    50
-  /wiki/Category:New_Zealand-related_lists:
-    8
+  "/wiki/Category:All_Wikipedia_articles_written_in_Australian_English":
+    400
+ # /wiki/Category:New_Zealand-related_lists: 50 000 articles is enough for you australia
+   # 8
 
 
 

@@ -6,6 +6,7 @@ import regex
 import yaml
 from pprint import pprint
 import re
+import time
 
 #this is just debug shit
 failedGets = set()
@@ -81,7 +82,7 @@ class Harvester(object):
     def gatherListEntries(self, articleSoup):
         listElements = set()
         #get the hrefs that lie inside of our scopes
-        print("harvisting the list elemetns")
+        print("harvesting the list elemetns")
         for eachPattern in self.rules["scopes"]:
             print("now using the rule: " + eachPattern)
             foundElements = articleSoup.select(eachPattern) #i need to use findAll here not select because findAll works with anchor text identifier which are needed to get htose hrefs labeld as "next" so fuck
@@ -112,7 +113,7 @@ class Harvester(object):
                 if eachBadString in searchRegion:
                     return False
 
-#so the bug is that when it doesnt find any of the good strings in the first scope, it doesnt check any of the other scopes...
+
         #check for  white list matches in the interesting areas
         #return true if match found
         for eachGoodScope, goodStrings in self.rules["whitelist"].items():
@@ -136,7 +137,12 @@ class Harvester(object):
         url = self.WIKIPEDIA_URL_ROOT_STRING + pageName
         if self.verbose:
             print("getting : " + url)
-        response = requests.get(url)#TODO: probably also catch all exceptions raised by making the request and just log the URLs that cause them
+        try:
+            response = requests.get(url)
+        except:#if we fail to connect-or make too many connections in quick succession-we should
+            print("error incurred getting this URL: ")
+            print(url)
+            return None
         if response.status_code != 200:
             print("error making request. status code: " + str(response.status_code))
             print(url)
@@ -149,7 +155,7 @@ class Harvester(object):
         #remove the parts of the title we don't care about
         title = re.sub(" -.*", "", fullTitle)
         #make it lower case
-        title = title.lower()
+       # title = title.lower() #TODO: not doing this because we are preserving case at the moment
         #replace apostrophes which are encoded differently in the URL
         #title = title.replace("%27","'")
         #likewise with the ampersand character
@@ -161,21 +167,21 @@ class Harvester(object):
 
 
 def main():
-     harvester = Harvester( "rules.yml", verbose=True)
+
+     harvester = Harvester( "aussierules.yml", verbose=True)
      setOfHarvestedTitle = harvester.harvest()
      for eachTitle in setOfHarvestedTitle:
          print("-" + eachTitle +"|")
      print("so we gathered the following amount of articles: " + str(len(setOfHarvestedTitle)))
      for each in failedGets:
          print("failed: " + each)
-     with open("15thlog.txt", "w", encoding="utf-8") as outFile:
+     with open("youngandfree.txt", "w", encoding="utf-8") as outFile: #this title a meme
          setOfHarvestedTitle = "\n".join(setOfHarvestedTitle)
          outFile.writelines(setOfHarvestedTitle)
 if __name__ == '__main__':
     main()
 
 # todo:
-# SO IF IT STILL FUCKS UP JEFF DA MAORI BECAUSE OF THE A GRAVE THEN IT MUST BE SOMETHING TO DO WITH DECODING THE URL FOR THAT ARTICLE THAT IT SCRAPES; because it works when i just use that article's real url as a seed
 # yeah note that it gets it when the URL is given as a seed but not from the ordinary crawl
 # -make determining nzness more sophisticated in the yml: you just consider checking wgCategories.
 
